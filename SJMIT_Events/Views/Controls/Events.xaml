@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:SJMIT_Events.ViewModels"
+             xmlns:converters="clr-namespace:SJMIT_Events.Converters"
+             x:Class="SJMIT_Events.Views.Controls.Events">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <!-- Event Status Colors -->
+            <Color x:Key="OverdueColor">#EA4335</Color>
+            <!-- Red for ended tasks -->
+            <Color x:Key="TodayColor">#34A853</Color>
+            <!-- Green for today -->
+            <Color x:Key="TomorrowColor">#4285F4</Color>
+            <!-- Blue for tomorrow -->
+            <Color x:Key="UpcomingColor">#FF9800</Color>
+            <!-- Orange for rest -->
+
+            <!-- Converters -->
+            <converters:DateToStatusColorConverter x:Key="DateToStatusColorConverter" />
+            <converters:DateToStatusConverter x:Key="DateToStatusConverter" />
+            <converters:DateToTimeConverter x:Key="DateToTimeConverter" />
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Main Content -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Events List -->
+        <CollectionView Grid.Row="1" 
+                        ItemsSource="{Binding Events}"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#121212}"
+                        SelectionMode="None">
+
+            <!-- Event Item Template -->
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E1E1E}"
+                           HasShadow="True"
+                           Margin="16,8,16,8"
+                           CornerRadius="12"
+                           Padding="0">
+
+                        <Grid Padding="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4"/>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Dynamic Status Color Bar -->
+                            <BoxView Grid.Column="0"
+                                     BackgroundColor="{Binding Date, Converter={StaticResource DateToStatusColorConverter}}"
+                                     CornerRadius="2"
+                                     VerticalOptions="Fill"/>
+
+                            <!-- Date Display -->
+                            <VerticalStackLayout Grid.Column="1" 
+                                               VerticalOptions="Center"
+                                               Spacing="2">
+                                <!-- Day of Week -->
+                                <Label Text="{Binding Date, StringFormat='{0:ddd}'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#5F6368, Dark=#9AA0A6}"
+                                       HorizontalOptions="Center"/>
+
+                                <!-- Day Number -->
+                                <Label Text="{Binding Date, StringFormat='{0:dd}'}"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#1A73E8, Dark=#8AB4F8}"
+                                       HorizontalOptions="Center"/>
+
+                                <Label Text="{Binding Date, StringFormat='{0:MMM}'}" 
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#5F6368, Dark=#9AA0A6}"
+                                       HorizontalOptions="Center"/>
+
+                            </VerticalStackLayout>
+
+                            <!-- Event Details -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Year Display - Top Right -->
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Date, StringFormat='{0:yyyy}'}"
+                                       FontSize="10"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#80868B, Dark=#9AA0A6}"
+                                       VerticalOptions="Start"
+                                       HorizontalOptions="End"
+                                       Margin="0,0,4,0"/>
+
+                                <!-- Event Content -->
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                                   VerticalOptions="Center"
+                                                   Spacing="6"
+                                                   Margin="0,0,50,0">
+                                    <!-- Event Title -->
+                                    <Label Text="{Binding Title}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="{AppThemeBinding Light=#202124, Dark=#E8EAED}"
+                                           LineBreakMode="TailTruncation"
+                                           MaxLines="2"/>
+
+                                    <!-- Event Description -->
+                                    <Label Text="{Binding Description}"
+                                           FontSize="14"
+                                           TextColor="{AppThemeBinding Light=#5F6368, Dark=#9AA0A6}"
+                                           LineBreakMode="WordWrap"
+                                           MaxLines="3">
+                                        <Label.Triggers>
+                                            <!-- Hide if no description -->
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding Description}"
+                                                         Value="">
+                                                         <Setter Property="IsVisible" Value="False"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding Description}"
+                                                         Value="{x:Null}">
+                                                        <Setter Property="IsVisible" Value="False"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+
+
+                                    <!-- Status Indicator (Optional) -->
+                                    <Label FontSize="12"
+                                           FontAttributes="Bold"
+                                           Margin="0,4,0,0">
+                                        <Label.Text>
+                                            <Binding Path="Date" Converter="{StaticResource DateToStatusConverter}"/>
+                                        </Label.Text>
+                                        <Label.TextColor>
+                                            <Binding Path="Date" Converter="{StaticResource DateToStatusColorConverter}"/>
+                                        </Label.TextColor>
+                                    </Label>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- Empty View -->
+            <CollectionView.EmptyView>
+                <Grid>
+                    <Grid.Triggers>
+                        <!-- Hide EmptyView if still loading -->
+                        <DataTrigger TargetType="Grid"
+                             Binding="{Binding IsLoading}"
+                             Value="True">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Grid.Triggers>
+                
+                    <VerticalStackLayout HorizontalOptions="Center" 
+                                       VerticalOptions="Center"
+                                       Spacing="16"
+                                       Padding="40">
+                        <Image Source="not_found.jpg"
+                               Aspect="AspectFit"
+                               WidthRequest="100"
+                               HorizontalOptions="Center"/>
+                        <Label Text="{Binding EmptyMessage}"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#5F6368, Dark=#9AA0A6}"
+                               HorizontalOptions="Center"/>
+                        <Label Text="{Binding Date}"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=#80868B, Dark=#9AA0A6}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </CollectionView.EmptyView>
+
+            <!-- Footer Spacing -->
+            <CollectionView.Footer>
+                <BoxView HeightRequest="20" BackgroundColor="Transparent"/>
+            </CollectionView.Footer>
+
+        </CollectionView>
+
+        <!-- Loading Indicator (initially hidden) -->
+        <ActivityIndicator Grid.Row="1"
+                          IsVisible="{Binding IsLoading}"
+                          IsRunning="{Binding IsLoading}"
+                          Color="{AppThemeBinding Light=#1A73E8, Dark=#8AB4F8}"
+                          VerticalOptions="Center"
+                          HorizontalOptions="Center"/>
+
+    </Grid>
+</ContentView>
