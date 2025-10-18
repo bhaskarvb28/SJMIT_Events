@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --border-focus: #3b82f6;
+            --bg-gray: #f9fafb;
+            --error: #dc2626;
+            --success: #059669;
+            --warning: #f59e0b;
+            --white: #ffffff;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-gray);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nav-header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a,
+        .nav-links button {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .nav-links a:hover,
+        .nav-links button:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .semesters-list {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .list-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-gray);
+        }
+
+        .list-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .list-content {
+            padding: 2rem;
+        }
+
+        .semester-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .semester-row:hover {
+            background-color: var(--bg-gray);
+        }
+
+        .semester-row:last-child {
+            border-bottom: none;
+        }
+
+        .semester-row.current {
+            background-color: #eff6ff;
+            border-left: 3px solid var(--primary);
+            padding-left: calc(1rem - 3px);
+        }
+
+        .semester-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .semester-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .semester-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            margin-right: 0.5rem;
+        }
+
+        .semester-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        /* Events Management Styles */
+        .events-header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .events-header-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .events-header-info p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-container {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .form-container h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .required {
+            color: var(--error);
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            background: var(--white);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-danger {
+            background: var(--error);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--error);
+        }
+
+        .alert-success {
+            background-color: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            color: var(--success);
+        }
+
+        .alert.hidden {
+            display: none;
+        }
+
+        .events-list {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .event-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .event-item:hover {
+            background-color: var(--bg-gray);
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .event-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .event-type {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .events-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .semester-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .semester-actions,
+            .event-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .btn-small {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-header">
+            <h1 id="pageTitle">Academic Dashboard</h1>
+            <div class="nav-links">
+                <button onclick="switchPage('dashboard')">Dashboard</button>
+                <button onclick="switchPage('semesters')">Manage Semesters</button>
+                <button onclick="switchPage('events')">Manage Events</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <h3>Total Semesters</h3>
+                    <div class="value" id="totalSemesters">0</div>
+                </div>
+                <div class="card stat-card">
+                    <h3>Current Semester</h3>
+                    <div class="value" id="currentSemesterName"
+                        style="font-size: 1.125rem; color: var(--text-secondary);">None</div>
+                </div>
+                <div class="card stat-card">
+                    <h3>Total Events</h3>
+                    <div class="value" id="totalEvents">0</div>
+                </div>
+                <div class="card stat-card">
+                    <h3>Upcoming Events</h3>
+                    <div class="value" id="upcomingEvents">0</div>
+                </div>
+            </div>
+
+            <div class="semesters-list">
+                <div class="list-header">
+                    <h2>Your Semesters</h2>
+                </div>
+                <div class="list-content" id="dashboardSemestersList">
+                    <div class="loading">Loading semesters...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semester Management Page -->
+        <div id="semesters" class="page">
+            <div class="form-container">
+                <h2 id="semesterFormTitle">Add New Semester</h2>
+                <div id="semesterAlert" class="alert alert-error hidden"></div>
+
+                <form id="semesterForm">
+                    <input type="hidden" id="semesterId" value="">
+
+                    <div class="form-group">
+                        <label for="semesterName">Semester Name <span class="required">*</span></label>
+                        <input type="text" id="semesterName" name="semesterName" required placeholder="e.g., Fall 2024">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="semesterStartDate">Start Date <span class="required">*</span></label>
+                            <input type="date" id="semesterStartDate" name="semesterStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="semesterEndDate">End Date <span class="required">*</span></label>
+                            <input type="date" id="semesterEndDate" name="semesterEndDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="semesterIsCurrent" name="semesterIsCurrent">
+                            <span style="margin-left: 0.5rem;">Mark as Current Semester</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-full" id="semesterSubmitBtn">Create Semester</button>
+                    <button type="button" class="btn btn-secondary btn-full hidden" id="semesterCancelBtn"
+                        onclick="cancelSemesterEdit()" style="margin-top: 0.5rem;">Cancel</button>
+                </form>
+            </div>
+
+            <div class="semesters-list">
+                <div class="list-header">
+                    <h2>All Semesters</h2>
+                </div>
+                <div class="list-content" id="allSemestersList">
+                    <div class="loading">Loading semesters...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Management Page -->
+        <div id="events" class="page">
+            <div class="form-container">
+                <h2>Select a Semester</h2>
+                <div class="form-group">
+                    <label for="eventSemesterSelect">Semester <span class="required">*</span></label>
+                    <select id="eventSemesterSelect" onchange="selectSemesterForEvents()">
+                        <option value="">Choose a semester...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="eventFormSection" class="form-container hidden">
+                <h2 id="eventFormTitle">Add Event</h2>
+                <div id="eventAlert" class="alert alert-error hidden"></div>
+
+                <form id="eventForm">
+                    <input type="hidden" id="eventId" value="">
+                    <input type="hidden" id="selectedSemesterId" value="">
+
+                    <div class="form-group">
+                        <label for="eventName">Event Name <span class="required">*</span></label>
+                        <input type="text" id="eventName" name="eventName" required placeholder="e.g., Midterm Exam">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventDate">Date <span class="required">*</span></label>
+                            <input type="date" id="eventDate" name="eventDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventType">Event Type <span class="required">*</span></label>
+                            <select id="eventType" name="eventType" required>
+                                <option value="">Select Type</option>
+                                <option value="exam">Exam</option>
+                                <option value="assignment">Assignment</option>
+                                <option value="project">Project</option>
+                                <option value="lecture">Lecture</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDescription">Description</label>
+                        <textarea id="eventDescription" name="eventDescription"
+                            placeholder="Add event details..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-full" id="eventSubmitBtn">Create Event</button>
+                    <button type="button" class="btn btn-secondary btn-full hidden" id="eventCancelBtn"
+                        onclick="cancelEventEdit()" style="margin-top: 0.5rem;">Cancel</button>
+                </form>
+            </div>
+
+            <div id="eventListSection" class="events-list hidden">
+                <div class="list-header">
+                    <h2 id="eventListTitle">Events</h2>
+                </div>
+                <div class="list-content" id="eventsList">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SEMESTER_API_URL = "MY_API_URL"; // Replace with your actual API Gateway URL
+        const EVENTS_API_URL = "My_API_URL"; // Add your events API URL
+                
+        let events = {};
+        let semesters = [];
+        let currentSemesterId = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSemestersFromAPI();
+            setupSemesterForm();
+            setupEventForm();
+        });
+
+        function switchPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+
+            const titles = {
+                dashboard: "Academic Dashboard",
+                semesters: "Manage Semesters",
+                events: "Manage Events"
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || "Academic Dashboard";
+
+            if (page === 'dashboard') loadDashboard();
+            if (page === 'semesters') loadAllSemesters();
+        }
+
+        function loadDashboard() {
+            const currentSem = semesters.find(s => s.isCurrent);
+            document.getElementById('totalSemesters').textContent = semesters.length;
+            document.getElementById('currentSemesterName').textContent = currentSem ? currentSem.name : "None";
+
+            const totalEv = Object.values(events).flat().length;
+            document.getElementById('totalEvents').textContent = totalEv;
+
+            const upcoming = Object.values(events).flat().filter(e => new Date(e.date) > new Date()).length;
+            document.getElementById('upcomingEvents').textContent = upcoming;
+
+            const html = semesters.map(sem => `
+                <div class="semester-row ${sem.isCurrent ? 'current' : ''}">
+                    <div class="semester-info">
+                        <h3>${escapeHtml(sem.name)} ${sem.isCurrent ? '<span class="semester-badge" style="margin-left: 0.5rem;">Current</span>' : ''}</h3>
+                        <p>${formatDate(sem.startDate)} - ${formatDate(sem.endDate)}</p>
+                    </div>
+                    <div class="semester-actions">
+                        <button class="btn btn-small btn-primary" onclick="navigateToEventPage('${sem.semesterId}')">
+                            View Events
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('dashboardSemestersList').innerHTML = html || '<div class="empty-state"><h3>No Semesters</h3><p>Create a semester to get started.</p></div>';
+        }
+
+        // Load semesters from API
+        async function loadSemestersFromAPI() {
+            try {
+                const response = await fetch(SEMESTER_API_URL, { method: 'GET' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    semesters = Array.isArray(result) ? result : result.semesters || [];
+                    semesters.forEach(sem => {
+                        if (!events[sem.semesterId]) events[sem.semesterId] = [];
+                    });
+                    loadDashboard();
+                    loadSemesterOptions();
+                } else {
+                    showAlert('Error loading semesters: ' + (result.error || 'Unknown error'), 'error', 'semesterAlert');
+                }
+            } catch (error) {
+                showAlert('Error loading semesters: ' + error.message, 'error', 'semesterAlert');
+            }
+        }
+
+        // Load events for a semester from API
+        async function loadEventsFromAPI(semesterId) {
+            try {
+                const response = await fetch(`${EVENTS_API_URL}?semesterId=${semesterId}`, { method: 'GET' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    events[semesterId] = Array.isArray(result) ? result : result.events || [];
+                    displayEvents(events[semesterId]);
+                } else {
+                    showAlert('Error loading events: ' + (result.error || 'Unknown error'), 'error', 'eventAlert');
+                }
+            } catch (error) {
+                showAlert('Error loading events: ' + error.message, 'error', 'eventAlert');
+            }
+        }
+
+        function setupSemesterForm() {
+            document.getElementById('semesterForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const semesterId = document.getElementById('semesterId').value;
+                const isEditing = !!semesterId;
+
+                const data = {
+                    name: document.getElementById('semesterName').value,
+                    startDate: document.getElementById('semesterStartDate').value,
+                    endDate: document.getElementById('semesterEndDate').value,
+                    isCurrent: document.getElementById('semesterIsCurrent').checked
+                };
+
+                if (isEditing) {
+                    data.semesterId = semesterId;
+                }
+
+                try {
+                    const response = await fetch(SEMESTER_API_URL, {
+                        method: isEditing ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        resetSemesterForm();
+                        loadSemestersFromAPI();
+                        showAlert('Semester ' + (isEditing ? 'updated' : 'created') + ' successfully!', 'success', 'semesterAlert');
+                    } else {
+                        showAlert('Error: ' + (result.error || 'Something went wrong'), 'error', 'semesterAlert');
+                    }
+                } catch (error) {
+                    showAlert('Error: ' + error.message, 'error', 'semesterAlert');
+                }
+            });
+        }
+
+        function loadAllSemesters() {
+            const html = semesters.map(sem => `
+                <div class="semester-row ${sem.isCurrent ? 'current' : ''}">
+                    <div class="semester-info">
+                        <h3>${escapeHtml(sem.name)} ${sem.isCurrent ? '<span class="semester-badge" style="margin-left: 0.5rem;">Current</span>' : ''}</h3>
+                        <p>${formatDate(sem.startDate)} - ${formatDate(sem.endDate)}</p>
+                    </div>
+                    <div class="semester-actions">
+                        <button class="btn btn-small btn-warning" onclick="editSemester('${sem.semesterId}', '${escapeHtml(sem.name)}', '${sem.startDate}', '${sem.endDate}', ${sem.isCurrent})">
+                            Edit
+                        </button>
+                        ${!sem.isCurrent ? `<button class="btn btn-small btn-success" onclick="setCurrentSemester('${sem.semesterId}')">
+                            Mark Current
+                        </button>` : ''}
+                        <button class="btn btn-small btn-danger" onclick="deleteSemester('${sem.semesterId}', '${escapeHtml(sem.name)}')">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('allSemestersList').innerHTML = html || '<div class="empty-state"><h3>No Semesters</h3><p>Create your first semester.</p></div>';
+        }
+
+        function editSemester(semesterId, name, startDate, endDate, isCurrent) {
+            document.getElementById('semesterId').value = semesterId;
+            document.getElementById('semesterName').value = name;
+            document.getElementById('semesterStartDate').value = startDate;
+            document.getElementById('semesterEndDate').value = endDate;
+            document.getElementById('semesterIsCurrent').checked = isCurrent;
+
+            document.getElementById('semesterFormTitle').textContent = 'Edit Semester';
+            document.getElementById('semesterSubmitBtn').textContent = 'Update Semester';
+            document.getElementById('semesterCancelBtn').classList.remove('hidden');
+
+            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function setCurrentSemester(semesterId) {
+            if (!confirm('Mark this as the current semester?')) return;
+
+            const data = {
+                semesterId: semesterId,
+                isCurrent: true
+            };
+
+            fetch(SEMESTER_API_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(response => response.json())
+                .then(result => {
+                    if (result.ok || result.success) {
+                        loadSemestersFromAPI();
+                        loadDashboard();
+                        loadSemesterOptions();
+                        showAlert('Current semester updated!', 'success', 'semesterAlert');
+                    } else {
+                        showAlert('Error: ' + (result.error || 'Failed to update'), 'error', 'semesterAlert');
+                    }
+                }).catch(error => showAlert('Error: ' + error.message, 'error', 'semesterAlert'));
+        }
+
+        function deleteSemester(semesterId, name) {
+            if (!confirm(`Delete "${name}"? This will also delete all associated events.`)) return;
+
+            fetch(SEMESTER_API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semesterId: semesterId })
+            }).then(response => response.json())
+                .then(result => {
+                    if (result.ok || result.success) {
+                        loadSemestersFromAPI();
+                        loadDashboard();
+                        loadSemesterOptions();
+                        showAlert('Semester deleted successfully!', 'success', 'semesterAlert');
+                    } else {
+                        showAlert('Error: ' + (result.error || 'Failed to delete'), 'error', 'semesterAlert');
+                    }
+                }).catch(error => showAlert('Error: ' + error.message, 'error', 'semesterAlert'));
+        }
+
+        function cancelSemesterEdit() {
+            resetSemesterForm();
+        }
+
+        function resetSemesterForm() {
+            document.getElementById('semesterForm').reset();
+            document.getElementById('semesterId').value = '';
+            document.getElementById('semesterFormTitle').textContent = 'Add New Semester';
+            document.getElementById('semesterSubmitBtn').textContent = 'Create Semester';
+            document.getElementById('semesterCancelBtn').classList.add('hidden');
+        }
+
+        function loadSemesterOptions() {
+            const select = document.getElementById('eventSemesterSelect');
+            select.innerHTML = '<option value="">Choose a semester...</option>' + semesters.map(s => `
+                <option value="${s.semesterId}">${escapeHtml(s.name)}</option>
+            `).join('');
+        }
+
+        function selectSemesterForEvents() {
+            const semesterId = document.getElementById('eventSemesterSelect').value;
+            if (!semesterId) {
+                document.getElementById('eventFormSection').classList.add('hidden');
+                document.getElementById('eventListSection').classList.add('hidden');
+                return;
+            }
+
+            currentSemesterId = semesterId;
+            const sem = semesters.find(s => s.semesterId === semesterId);
+
+            document.getElementById('selectedSemesterId').value = semesterId;
+            document.getElementById('eventDate').min = sem.startDate;
+            document.getElementById('eventDate').max = sem.endDate;
+
+            document.getElementById('eventFormSection').classList.remove('hidden');
+            document.getElementById('eventListSection').classList.remove('hidden');
+            document.getElementById('eventListTitle').textContent = `${escapeHtml(sem.name)} - Events`;
+
+            loadEventsForSemester(semesterId);
+            resetEventForm();
+        }
+
+        function setupEventForm() {
+            document.getElementById('eventForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const eventId = document.getElementById('eventId').value;
+                const isEditing = !!eventId;
+
+                const data = {
+                    name: document.getElementById('eventName').value,
+                    date: document.getElementById('eventDate').value,
+                    type: document.getElementById('eventType').value,
+                    description: document.getElementById('eventDescription').value,
+                    semesterId: currentSemesterId
+                };
+
+                if (isEditing) {
+                    data.eventId = eventId;
+                }
+
+                try {
+                    const response = await fetch(EVENTS_API_URL, {
+                        method: isEditing ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        resetEventForm();
+                        loadEventsFromAPI(currentSemesterId);
+                        showAlert(isEditing ? 'Event updated successfully!' : 'Event created successfully!', 'success', 'eventAlert');
+                    } else {
+                        showAlert('Error: ' + (result.error || 'Something went wrong'), 'error', 'eventAlert');
+                    }
+                } catch (error) {
+                    showAlert('Error: ' + error.message, 'error', 'eventAlert');
+                }
+            });
+        }
+
+        function loadEventsForSemester(semesterId) {
+            loadEventsFromAPI(semesterId);
+        }
+
+        function deleteEvent(eventId, name) {
+            if (!confirm(`Delete "${name}"?`)) return;
+
+            fetch(EVENTS_API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId: eventId })
+            }).then(response => response.json())
+                .then(result => {
+                    if (result.ok || result.success) {
+                        loadEventsFromAPI(currentSemesterId);
+                        showAlert('Event deleted successfully!', 'success', 'eventAlert');
+                    } else {
+                        showAlert('Error: ' + (result.error || 'Failed to delete'), 'error', 'eventAlert');
+                    }
+                }).catch(error => showAlert('Error: ' + error.message, 'error', 'eventAlert'));
+        }
+
+        function resetEventForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('eventFormTitle').textContent = 'Add Event';
+            document.getElementById('eventSubmitBtn').textContent = 'Create Event';
+            document.getElementById('eventCancelBtn').classList.add('hidden');
+        }
+
+        function cancelEventEdit() {
+            resetEventForm();
+        }
+
+        function navigateToEventPage(semesterId) {
+            switchPage('events');
+            document.getElementById('eventSemesterSelect').value = semesterId;
+            selectSemesterForEvents();
+        }
+
+        function showAlert(message, type, alertId) {
+            const alert = document.getElementById(alertId);
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.classList.remove('hidden');
+
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 5000);
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>
